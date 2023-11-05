@@ -1,4 +1,4 @@
-# Bubble Display
+# Market Bubble
 ## What our project is
 Designed software and hardware!
 #### Software:
