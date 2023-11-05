@@ -5,7 +5,7 @@ Designed software and hardware!
 We have developed a program that retrieves a large stream of Binance data from finhub, uses Kafka (learned from the tutorial Marshall Wace provided) to efficiently process that high-volume data stream and implement scalability.
 After analysing the transactions data stream, the program outputs frequency of a chosen transaction type using bubbles.
 
-* Data representation can be a way of art. And this is the way we are going today. *
+* Data representation can be a way of art. And this is the way we are going today.
 #### Hardware
 Used Arduino ESP32 Wrover to control a stepper motor fixed around an water column *of own desing*. We send bubbles up the water column in a frequency directly proportional to the volume of a chosen transaction (currency 1 to currency 2) type per 10 seconds.
 
