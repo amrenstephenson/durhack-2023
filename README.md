@@ -1,4 +1,5 @@
-# What our project is
+# Bubble Display
+## What our project is
 Designed software and hardware!
 #### Software:
 We have developed a program that retrieves a large stream of Binance data from finhub, uses Kafka (learned from the tutorial Marshall Wace provided) to efficiently process that high-volume data stream and implement scalability.
