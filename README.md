@@ -8,6 +8,7 @@ After analysing the transactions data stream, the program outputs the frequency 
 * Data representation can be a way of art. And this is the way we are going today.
 #### Hardware
 Used Arduino ESP32 Wrover to control a stepper motor fixed around a water column *of own design*. We send bubbles up the water column in a frequency directly proportional to the volume of a chosen transaction (currency 1 to currency 2) type per 10 seconds.
+
 ![Hardware setup](images/hardware_setup.jpeg)
 
 ## Why bubbles?
@@ -26,6 +27,7 @@ Previous designs involved using a shutter door in between the water chamber (at 
 - filled with water only a third of the way
 	this is the equilibrium point where the water volume is light enough to keep its desire to come out of the bottle through the hole (due to gravity) in balance with the surface tension at the chamber opening.
 	=> no water comes out in the model's resting state.
+
 ![Working solution](images/working_bubble_column.jpeg)
 
 ## Additional features:
