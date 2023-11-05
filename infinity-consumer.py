@@ -14,9 +14,12 @@ class Message():
     last_price: float
     volume: float
 
-conf = {'bootstrap.servers': 'localhost:9092, localhost:9093, localhost:9094',
+SYMBOLS = json.load(open("settings.json", "r"))["symbols"]
+
+conf = {'bootstrap.servers': 'localhost:29092, localhost:29093',
         'group.id': 'singular-consumer-group'}
 consumer = Consumer(conf)
+print(consumer)
 
 consumer.subscribe(["symbols"])#, on_assign=reset_offsets)
 
@@ -36,22 +39,30 @@ def hello_world():
 
 @app.route("/api/bubbles")
 def bubbles():
+    return "Bubbles"
+    print("A")
     current_symbol = "BINANCE:ETHUSDT"
     if not current_symbol in average_volumes:
         return "-1"
-    result = str(5 - 1.55 * log10(average_volumes[current_symbol])) + "," + current_symbol.split(":")[1]
-    return result
+    result = str(max(0.75, min(5 - 1.55 * log10(average_volumes[current_symbol]))))
+    print("result", result)
+    title = current_symbol.split(":")[-1]
+    hue = (SYMBOLS.index(symbol) * 16) % 256
+    return ",".join([result, title, hue])
 
-@asyncio.coroutine
-def run_server():
+
+async def run_server():
     app.run(host="0.0.0.0", port=8080)
-
 
 async def consume():
     global messages
     while True:
         try:
-            message_data = consumer.poll()
+            message_data = consumer.poll(timeout=1)
+            if message_data is None:
+                print(consumer)
+                await asyncio.sleep(0.1)
+                continue
             json_data = json.loads(message_data.value().decode())
             symbol = json_data["s"]
             if not symbol in messages:
@@ -68,7 +79,7 @@ async def consume():
                 print(len(messages["BINANCE:ETHUSDT"]))
             for symbol in messages:
                 messages[symbol] = list(filter(lambda m: m.unix_time >= latest_times[symbol] - 10 * 1000, messages[symbol]))
-                average_volumes[symbol] = sum([m.volume for m in messages[symbol]]) / len([symbol])
+                average_volumes[symbol] = sum([m.volume for m in messages[symbol]]) / (len(messages[symbol]) + 0.1)
             # print(average_volumes)
             await asyncio.sleep(0)
         except RuntimeError as e:

@@ -6,7 +6,7 @@ import socket
 
 API_TOKEN = json.load(open("secret.json", "r"))["finnhubToken"]
 
-conf = {'bootstrap.servers': 'localhost:9092, localhost:9093, localhost:9094',
+conf = {'bootstrap.servers': 'localhost:29092, localhost:29093',
         'client.id': socket.gethostname()}
 
 producer = Producer(conf)
