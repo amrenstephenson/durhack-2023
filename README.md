@@ -22,11 +22,13 @@ Data Visualization: higher frequency data correlates to proportionally higher fr
 Previous designs involved using a shutter door in between the water chamber (at the top of the column) and the air chamber (at the bottom of the column); and designing a one-way valve (because we surprisingly could not buy any at B&Q) to be placed at the bottom of the water-column only to be opened by the motor from underneath the design to let the air in when bubbles are to be generated. 
 
 ## The way of experimentation showed us our solution:
-- a sealed vertical water column with a tiny hole at the bottom
+- A sealed vertical water column with a tiny hole at the bottom
 	water is squeezed out of the column with each motor-generated compression, drawing air in and forming a bubble.
-- filled with water only a third of the way
+- Filled with water only a third of the way
 	this is the equilibrium point where the pressure is low enough to keep its desire to come out of the bottle through the hole (due to gravity) in balance with the surface tension at the chamber opening.
 	=> no water comes out in the model's resting state.
+- Current design is an effective compromise between functionality and limited time;
+ 	future improvements could be made to increase compactness and watertightness by using air pumps and increasing column height. 
 
 ![Working solution](images/working_bubble_column.jpeg)
 
