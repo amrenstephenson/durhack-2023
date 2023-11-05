@@ -9,9 +9,9 @@
 
 void getBubblesData(BubblesData& data) {
   // query endpoint:
-  // String csvString = GET(ENDPOINT);
+  String csvString = GET(ENDPOINT);
 
-  String csvString = "1.0,test name,205";
+  // String csvString = "1.0,test name,205";
 
   // parse CSV:
   data.name = "No Data";
