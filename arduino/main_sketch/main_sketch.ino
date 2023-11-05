@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <ESP32Servo.h>
 #include "Board.h"
+#include "StepMotor.h"
 
 // WiFi constants:
 #define IP_ADDR "10.247.204.136"
@@ -11,17 +11,16 @@
 #define ENDPOINT SERVER "/interval"
 
 // Board PINs:
-#define SERVO_PIN 15
-#define BUTTON_PIN 13
+#define BUTTON1_PIN 13
+#define BUTTON2_PIN 15
 
 // Bubble config:
-#define INIT_SERVO_ANGLE 90
-#define FINAL_SERVO_ANGLE 0
-#define VALVE_OPEN_DURATION 100 // ms
+#define RESET_ANGLE 40
+#define SQUEEZE_FORCE 80
+#define MOTOR_SPEED 3
 
-Servo servo;
 float bubblesInterval = -1;
-bool killed = false;
+bool started = false;
 
 void connectToWiFi() {
   if (WiFi.status() != WL_CONNECTED) {
@@ -29,7 +28,7 @@ void connectToWiFi() {
     const char* password = "RWvJniP3";
     WiFi.begin(ssid, password);
     Serial.println("Connecting");
-    for (unsigned int i = 0; WiFi.status() != WL_CONNECTED; i++) { 
+    for (unsigned int i = 0; WiFi.status() != WL_CONNECTED; i++) {
       delay(500);
       Serial.print(".");
       if (i > 15)
@@ -80,9 +79,8 @@ float getInterval() {
 }
 
 void makeBubble() {
-  servo.write(FINAL_SERVO_ANGLE);
-  delay(VALVE_OPEN_DURATION);
-  servo.write(INIT_SERVO_ANGLE);
+  moveAngle(true, RESET_ANGLE + SQUEEZE_FORCE, MOTOR_SPEED);
+  moveAngle(false, RESET_ANGLE, MOTOR_SPEED);
 
   Serial.println("blub");
 }
@@ -90,25 +88,49 @@ void makeBubble() {
 void setup() {
   Serial.begin(115200);
 
-  pinMode(BUTTON_PIN, INPUT);
+  // setup pins:
+  pinMode(BUTTON1_PIN, INPUT);
+  pinMode(BUTTON2_PIN, INPUT);
+  for (int i = 0; i < 4; i++) {
+    pinMode(motorPorts[i], OUTPUT);
+  }
 
   connectToWiFi();
   bubblesInterval = getInterval();
-  servo.setPeriodHertz(50);
-  servo.attach(SERVO_PIN, 500, 2500);
-  servo.write(INIT_SERVO_ANGLE);
 
   Serial.printf("bubblesInterval: %f\n", bubblesInterval);
 }
 
 void loop() {
-  if (!killed && digitalRead(BUTTON_PIN) == LOW) {
-    killed = true;
-    Serial.println("KILLING EVERYING!!");
+  static int prevBubbleTime = 0;
+  static bool prevBothDown = false;
+
+  bool btn1Down = digitalRead(BUTTON1_PIN) == LOW;
+  bool btn2Down = digitalRead(BUTTON2_PIN) == LOW;
+  bool bothDown = btn1Down & btn2Down;
+
+  if (started) {
+    if (bubblesInterval > 0) {
+      if ((millis() - prevBubbleTime) > bubblesInterval * 1000) {
+        makeBubble();
+        prevBubbleTime = millis();
+      }
+    }
+
+    if (!prevBothDown && bothDown) {
+      started = false;
+      Serial.println("STOPPING!!");
+    }
+  } else {
+    if (!prevBothDown && bothDown) {
+      started = true;
+      Serial.println("STARTING!!");
+    } else if (btn1Down && !btn2Down) {
+      moveAngle(true, 1, MOTOR_SPEED);
+    } else if (btn2Down && !btn1Down) {
+      moveAngle(false, 1, MOTOR_SPEED);
+    }
   }
 
-  if (!killed && bubblesInterval > 0) {
-    delay(1000 * bubblesInterval);
-    makeBubble();
-  }
+  prevBothDown = bothDown;
 }
