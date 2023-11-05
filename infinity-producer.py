@@ -19,7 +19,7 @@ def on_message(web_socket, message):
     for datum in json_data["data"]:
         symbol = datum["s"]
         print(symbol)
-        del datum["s"]
+        # del datum["s"]
         del datum["c"] # Delete trade conditions
         print(json.dumps(datum))
         producer.produce("symbols", key=symbol, value=json.dumps(datum), callback=acked)
