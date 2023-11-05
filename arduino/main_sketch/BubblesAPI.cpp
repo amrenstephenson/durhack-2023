@@ -11,9 +11,10 @@ void getBubblesData(BubblesData& data) {
   // query endpoint:
   // String csvString = GET(ENDPOINT);
 
-  String csvString = "2.0,test name";
+  String csvString = "1.0,test name,205";
 
   // parse CSV:
+  data.name = "No Data";
   const char* delims = ",";
   char* s = strdup(csvString.c_str());
   const char* part = strtok(s, delims);
@@ -27,6 +28,10 @@ void getBubblesData(BubblesData& data) {
       case 1:
         data.name = part;
         Serial.printf("Name: %s\n", data.name.c_str());
+        break;
+      case 2:
+        data.hue = (int)atol(part);
+        Serial.printf("Hue: %d\n", data.hue);
         break;
       default:
         break;

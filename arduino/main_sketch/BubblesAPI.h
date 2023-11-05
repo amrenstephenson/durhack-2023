@@ -6,6 +6,7 @@
 struct BubblesData {
   float interval;
   String name;
+  int hue;
 };
 
 void getBubblesData(BubblesData& data);
