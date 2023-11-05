@@ -1,14 +1,8 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
 #include "Board.h"
 #include "StepMotor.h"
-
-// WiFi constants:
-#define IP_ADDR "10.247.204.136"
-#define PORT "8080"
-#define SERVER "http://" IP_ADDR ":" PORT
-#define ENDPOINT SERVER "/interval"
+#include "WiFiUtils.h"
+#include "BubblesAPI.h"
 
 // Board PINs:
 #define BUTTON1_PIN 13
@@ -19,71 +13,12 @@
 #define SQUEEZE_FORCE 80
 #define MOTOR_SPEED 3
 
+// Other:
+#define API_POLL_INTERVAL_MS 1000
+
 float bubblesInterval = -1;
 bool started = false;
-
-void connectToWiFi() {
-  if (WiFi.status() != WL_CONNECTED) {
-    const char* ssid = "LinkIT";
-    const char* password = "RWvJniP3";
-    WiFi.begin(ssid, password);
-    Serial.println("Connecting");
-    for (unsigned int i = 0; WiFi.status() != WL_CONNECTED; i++) {
-      delay(500);
-      Serial.print(".");
-      if (i > 15)
-        return;
-    }
-
-    Serial.println("");
-    Serial.printf("Connected to %s\n", ssid);
-    Serial.println("IP address: " + WiFi.localIP().toString());
-  }
-}
-
-String GET(String url) {
-  String resp;
-
-  for (;;) {
-    String errMsg = "";
-    if (WiFi.status() == WL_CONNECTED) {
-      WiFiClient client;
-      HTTPClient http;
-      Serial.println("Requesting " + url);
-      if (http.begin(client, url)) {
-        int httpCode = http.GET();
-        Serial.println("============== Response code: " + String(httpCode));
-        if (httpCode == 200) {
-          resp = http.getString();
-          http.end();
-          break;
-        }
-        http.end();
-      }
-      errMsg = "Amren's crappy server is down";
-    } else {
-      errMsg = "Not connected to LinkIT";
-    }
-    
-    Serial.print("GET failed, ERROR: ");
-    Serial.println(errMsg);
-    delay(1000);
-  }
-
-  return resp;
-}
-
-float getInterval() {
-  String intervalString = GET(ENDPOINT);
-  return intervalString.toFloat();
-}
-
-void makeBubble() {
-  moveAngle(true, RESET_ANGLE + SQUEEZE_FORCE, MOTOR_SPEED);
-  moveAngle(false, RESET_ANGLE, MOTOR_SPEED);
-
-  Serial.println("blub");
-}
+BubblesData bubblesData;
 
 void setup() {
   Serial.begin(115200);
@@ -96,13 +31,18 @@ void setup() {
   }
 
   connectToWiFi();
-  bubblesInterval = getInterval();
+}
 
-  Serial.printf("bubblesInterval: %f\n", bubblesInterval);
+void makeBubble() {
+  moveAngle(true, RESET_ANGLE + SQUEEZE_FORCE, MOTOR_SPEED);
+  moveAngle(false, RESET_ANGLE, MOTOR_SPEED);
+
+  Serial.println("blub");
 }
 
 void loop() {
   static int prevBubbleTime = 0;
+  static int prevPollAPITime = 0;
   static bool prevBothDown = false;
 
   bool btn1Down = digitalRead(BUTTON1_PIN) == LOW;
@@ -110,13 +50,21 @@ void loop() {
   bool bothDown = btn1Down & btn2Down;
 
   if (started) {
-    if (bubblesInterval > 0) {
-      if ((millis() - prevBubbleTime) > bubblesInterval * 1000) {
+    // Poll API every API_POLL_INTERVAL_MS ms:
+    if ((millis() - prevPollAPITime) > API_POLL_INTERVAL_MS) {
+      getBubblesData(bubblesData);
+      prevPollAPITime = millis();
+    }
+
+    // Make bubbles at intervals:
+    if (bubblesData.interval >= 0) {
+      if ((millis() - prevBubbleTime) > bubblesData.interval * 1000) {
         makeBubble();
         prevBubbleTime = millis();
       }
     }
 
+    // both buttons held -> STOP:
     if (!prevBothDown && bothDown) {
       started = false;
       Serial.println("STOPPING!!");
