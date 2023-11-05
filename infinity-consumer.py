@@ -39,23 +39,30 @@ def hello_world():
 
 @app.route("/api/bubbles")
 def bubbles():
-    return "Bubbles"
-    print("A")
-    current_symbol = "BINANCE:ETHUSDT"
-    if not current_symbol in average_volumes:
-        return "-1"
-    result = str(max(0.75, min(5 - 1.55 * log10(average_volumes[current_symbol]))))
-    print("result", result)
-    title = current_symbol.split(":")[-1]
-    hue = (SYMBOLS.index(symbol) * 16) % 256
-    return ",".join([result, title, hue])
+    try:
+        print("A")
+        current_symbol = "BINANCE:BTCUSDT"
+        
+        if not current_symbol in average_volumes:
+            return "-1"
+        # return "Bubbles"
+        print("A")
+        print(average_volumes)
+        result = str(max(0.75, min(5 - 1.55 * log10(average_volumes[current_symbol]), 5)))
+        print("B")
+        print("result", result)
+        title = current_symbol.split(":")[-1]
+        hue = (SYMBOLS.index(current_symbol) * 16) % 256
+    except Exception as e:
+        print(e)
+    return ",".join([result, title, str(hue)])
 
 
 async def run_server():
     app.run(host="0.0.0.0", port=8080)
 
 async def consume():
-    global messages
+    global messages, average_volumes
     while True:
         try:
             message_data = consumer.poll(timeout=1)
