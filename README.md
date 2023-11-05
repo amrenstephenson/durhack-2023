@@ -16,6 +16,7 @@ Data Visualization: higher frequency data correlates to proportionally higher fr
 
 # How we built it
 -- Went through many prototype iterations. Different motors; different ways to generate bubbles.--
+
 Previous designs involved using a shutter-door in between the water chamber (at the top of the column) and the air chamber (at the bottom of the column); and designing a one-way valve (because we surprisingly could not buy any at B&Q) to be placed at the bottom of the water-column only to be opened by the motor from underneath the design to let the air in when bubbles are to be generated. 
 
 
